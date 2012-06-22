@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script type="text/javascript" src="/jquery.js"></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript" src="/cmdio.js"></script>
+        <script type="text/javascript">
+            
+            var socket = io.connect('',3000);
+        
+            var commandIo = new cmd.io (socket);
+
+            commandIo.setCmds({
+
+                hello: function (sock) {
+                    alert('Server says hello');
+                }
+
+            });
+
+            $(document).ready(function () {
+
+                console.log("DOM loaded");
+
+                var listProducts = function (items) {
+
+                    console.log(items);
+
+                    $('#productlist').empty();
+
+                    if (items) {
+                        for (i in items) {
+
+                            console.log(items[i].title);
+
+                            var li = $('<li />');
+                            li.text(items[i].title);
+
+                            $('#productlist').append(li);
+                        }
+                    }
+
+                };
+
+                commandIo.send ('listProducts',{},listProducts);
+
+                $('#cmdadd').click(function (ev) {
+
+                    console.log("Enviando producto");
+                    var params = {
+                        code: $('#icode').val(),
+                        title: $('#ititle').val(),
+                        description: $('#idesc').val()
+                    }
+
+                    console.log('params:');
+                    console.log(params);
+
+                    code = $('#icode').val('');
+                    title = $('#ititle').val('');
+                    desc = $('#idesc').val('');
+
+                    commandIo.send ('addProduct',params, function (newId) {
+                        alert('Item added with id '+ newId);
+                        console.log("ACA SEND");
+                        //commandIo.send ('listProducts',{},listProducts);
+                    });
+
+                });
+
+            });
+
+            
+        </script>
+    </head>
+    <body>
+        <h1>Cmd.io test</h1>
+        
+        <h2>List of products</h2>
+        
+        <ul id="productlist"></ul>
+        
+        <h2>Add product</h2>
+        
+        <label>Code</label>
+        <input type="text" id="icode" />
+        <br />
+        <label>Title</label>
+        <input type="text" id="ititle" />
+        <br />
+        <label>Description</label>
+        <textarea id="idesc"></textarea>
+        <br />
+        <input type="button" id="cmdadd" value="add" />
+        
+    </body>
+</html>
