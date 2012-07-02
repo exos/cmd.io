@@ -1,0 +1,19 @@
+{
+  "author": "Oscar Gentilezza <tioscar@gmail.com> (http://blog.exodica.com.ar)",
+  "name": "cmd.io",
+  "description": "Send commands by socks | childs",
+  "version": "0.0.1",
+  "homepage": "https://github.com/exos/cmd.io",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/exos/cmd.io.git"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {
+	"socket.io": ">=0.9.5"
+  },
+  "engines": {
+    "node": "*"
+  }
+}
