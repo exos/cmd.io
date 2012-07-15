@@ -2,8 +2,11 @@
 module.exports = {
     io: require('./lib/cmdio'),
     
-    clientExpressRoute: function (eapp) {
-        eapp.get('/cmdio/client.js', function (req, res) {
+    clientExpressRoute: function (eapp, filepath) {
+
+	var filepath = filepath || '/cmdio/client.js';
+
+        eapp.get(filepath, function (req, res) {
             
             var stream = require('fs').createReadStream(__dirname+'/lib/cmdio.js');
             

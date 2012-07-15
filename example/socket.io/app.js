@@ -42,11 +42,41 @@ function handler (request, response) {
 
 }
 
+var Products = require('./orders');
+var ProductsInterface = new Products();
+
+
 io.sockets.on('connection', function (socket) {
  
     var cmdiocontroller = new cmdio.io(socket);
-    cmdiocontroller.setCmds(require('./orders'));
+    
+    cmdiocontroller.setCmds(ProductsInterface.getMethods());
+    
+    var addListener = function (product) {
+	 cmdiocontroller.send('addProduct', {product: product});
+    }
 
+    var modListener = function (product) {
+	 cmdiocontroller.send('modProduct', {product: product});
+    }
+    
+    var delListener = function (pid) {
+	 cmdiocontroller.send('delProduct', {id: pid});
+    }
+    
+    ProductsInterface.on('add', addListener);
+    ProductsInterface.on('mod', modListener);
+    ProductsInterface.on('del', delListener);
+    
     cmdiocontroller.send('hello');
  
+    socket.on('disconnect', function () {
+	ProductsInterface.removeListener('add', addListener);
+	ProductsInterface.removeListener('mod', modListener);
+	ProductsInterface.removeListener('del', delListener);
+	
+	cmdiocontroller = null;
+	socket = null;
+    });
+    
 });

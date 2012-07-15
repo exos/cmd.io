@@ -8,43 +8,98 @@
         <script type="text/javascript" src="/cmdio.js"></script>
         <script type="text/javascript">
             
-            var socket = io.connect('',3000);
-        
-            var commandIo = new cmd.io (socket);
-
-            commandIo.setCmds({
-
-                hello: function (sock) {
-                    alert('Server says hello');
-                }
-
-            });
-
+            if (typeof console == "undefined") {
+		window.console = {
+		      log: function () {}
+		};
+            }
+            
             $(document).ready(function () {
+            
+		var socket = io.connect('',3000);
+	    
+		var commandIo = new cmd.io (socket);
 
-                console.log("DOM loaded");
+		commandIo.setCmds({
 
-                var listProducts = function (items) {
+		    hello: function (sock) {
+			alert('Server says hello');
+		    }
 
-                    console.log(items);
+		});
+		
+		var cmds = {
+		
+			addProduct: function (cmd) {
+			
+				console.log(cmd);
+			
+				var prod = cmd.params.product;
+			
+				var li = $('<li />',{id: 'prod' + prod.id});
 
-                    $('#productlist').empty();
+				
+				li.append($('<span />', {text:prod.title}));
+				li.append($('<a />', {
+					text: 'delete',
+					'class': 'remove',
+					css: {cursor: 'pointer'},
+					click: function () {
 
-                    if (items) {
-                        for (i in items) {
+						if (confirm('Do you want to delete this product?')) {
+							commandIo.send('delProduct',{id: prod.id});
+						}
+					}
+				}));
 
-                            console.log(items[i].title);
+				$('#productlist').append(li);
+			},
+			
+			modProduct: function (cmd) {
+			
+				var prod = cmd.product;
+				
+				var li = $('#prod'+prod.id);
+				
+				li.empty();
+				
+				li.append($('<span />', {text:prod.title}));
+				
+				li.append($('<a />', {
+					text: 'delete',
+					css: {cursor: 'pointer'},
+					click: function () {
 
-                            var li = $('<li />');
-                            li.text(items[i].title);
+						if (confirm('Do you want to delete this product?')) {
+							commandIo.send('delProduct',{id: prod.id});
+						}
+					}
+				}));
+				
+			},
+			
+			delProduct: function (cmd) {
+				$('#prod'+cmd.params.id).remove();
+			},
+			
+			listProducts: function (items) {
 
-                            $('#productlist').append(li);
-                        }
-                    }
+			    console.log(items);
 
-                };
+			    $('#productlist').empty();
 
-                commandIo.send ('listProducts',{},listProducts);
+			    if (items) {
+				for (i in items) {
+				    cmds.addProduct({params: {product: items[i]}});
+				}
+			    }
+
+			}
+			
+		};
+
+		commandIo.setCmds(cmds);
+		commandIo.send ('listProducts',{},cmds.listProducts);
 
                 $('#cmdadd').click(function (ev) {
 
@@ -62,10 +117,8 @@
                     title = $('#ititle').val('');
                     desc = $('#idesc').val('');
 
-                    commandIo.send ('addProduct',params, function (newId) {
-                        alert('Item added with id '+ newId);
-                        console.log("ACA SEND");
-                        //commandIo.send ('listProducts',{},listProducts);
+                    commandIo.send ('addProduct',params, function (product) {
+                        console.log('Item added with id '+ product.id);
                     });
 
                 });
@@ -74,6 +127,12 @@
 
             
         </script>
+        <style type="text/css">
+		a.remove {
+			color: #f00;
+			margin-left: 10px;
+		}
+	</style>
     </head>
     <body>
         <h1>Cmd.io test</h1>
